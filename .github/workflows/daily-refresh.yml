@@ -1,0 +1,45 @@
+name: Daily GA4 Dashboard Refresh
+
+on:
+  schedule:
+    # Asia/Taipei 08:00 = UTC 00:00
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Refresh dashboard cache
+        env:
+          GA4_DASHBOARD_MODE: ${{ vars.GA4_DASHBOARD_MODE || 'mock' }}
+          GA4_DASHBOARD_TITLE: ${{ vars.GA4_DASHBOARD_TITLE || 'GA4 + GSC 每日更新儀表板' }}
+          GA4_DASHBOARD_GSC_SITE: ${{ vars.GA4_DASHBOARD_GSC_SITE || 'https://example.com/' }}
+          GA4_DASHBOARD_RANGE_LABEL: ${{ vars.GA4_DASHBOARD_RANGE_LABEL || '近 28 天' }}
+          GA4_DASHBOARD_REMOTE_JSON_URL: ${{ vars.GA4_DASHBOARD_REMOTE_JSON_URL }}
+          GA4_DASHBOARD_REMOTE_HEADERS_JSON: ${{ vars.GA4_DASHBOARD_REMOTE_HEADERS_JSON }}
+          GA4_DASHBOARD_REMOTE_QUERY_JSON: ${{ vars.GA4_DASHBOARD_REMOTE_QUERY_JSON }}
+          GA4_DASHBOARD_REMOTE_USE_POST: ${{ vars.GA4_DASHBOARD_REMOTE_USE_POST }}
+          GA4_DASHBOARD_REMOTE_POST_JSON: ${{ vars.GA4_DASHBOARD_REMOTE_POST_JSON }}
+          GA4_DASHBOARD_REMOTE_BEARER_TOKEN: ${{ secrets.GA4_DASHBOARD_REMOTE_BEARER_TOKEN }}
+        run: php refresh-dashboard.php
+
+      - name: Commit updated cache
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/dashboard-cache.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: daily refresh dashboard cache"
+          git push

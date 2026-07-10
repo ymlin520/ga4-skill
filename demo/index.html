@@ -71,7 +71,7 @@
   <div class="wrap" id="app">載入中...</div>
   <script>
     async function loadPayload(){
-      const res = await fetch('../examples/payload.example.json');
+      const res = await fetch('../data/dashboard-cache.json');
       return await res.json();
     }
 
@@ -131,12 +131,13 @@
               <span class="pill">GA4 + GSC</span>
               <span class="pill">Universal Dashboard</span>
             </div>
-            <h1>智慧量子數據指揮中心</h1>
+            <h1>${data.dashboardTitle || '智慧量子數據指揮中心'}</h1>
             <p>這是一個從 WordPress 後台儀表板抽離出來的通用版前台介面。相同 payload 可重用於 HTML 網站、WordPress 後台或任何自訂系統。</p>
             <div class="meta">
               <span>狀態：${data.statusLabel}</span>
               <span>範圍：${data.rangeLabel}</span>
               <span>GSC Site：${data.gscSite}</span>
+              <span>最後更新：${data.refreshMeta?.refreshedAtLabel || '未更新'}</span>
             </div>
           </div>
           <div class="hero-card status">

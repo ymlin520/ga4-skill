@@ -309,6 +309,25 @@ If recreating the UI elsewhere, preserve:
 - rank lists for pages / sources / countries
 - realtime card prominence
 
+## Daily Auto-Refresh Pattern
+
+When the user asks for automatic refresh, prefer one of these two patterns:
+
+1. **Server cron** — best when the dashboard is hosted on a normal PHP server
+2. **GitHub Actions schedule** — best when the repo itself should refresh a committed cache JSON every day
+
+Recommended default for Taiwan users:
+
+- schedule at **08:00 Asia/Taipei**
+- use a cache JSON file such as `data/dashboard-cache.json`
+- let the front-end read the cache rather than calling GA4/GSC directly from the browser
+
+Completion criteria:
+- [ ] a refresh script exists and can rebuild the payload/cache without manual editing
+- [ ] a daily 08:00 scheduler exists (cron or GitHub Actions)
+- [ ] the UI reads the refreshed cache file or API endpoint
+- [ ] secrets stay outside the committed repo
+
 ## Common Pitfalls
 
 1. **Passing raw Google API rows to the front-end**

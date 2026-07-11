@@ -14,6 +14,13 @@
     .wrap{max-width:1480px;margin:0 auto;padding:24px}
     .hero{display:grid;grid-template-columns:1.4fr .8fr;gap:16px;margin-bottom:18px}
     .hero-card,.panel,.metric-card,.list-card,.realtime-card{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow)}
+    .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+    .hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .refresh-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:#fff;color:var(--blue);border-radius:999px;padding:10px 14px;font-size:12px;font-weight:900;cursor:pointer;box-shadow:0 8px 18px rgba(31,122,224,.08)}
+    .refresh-btn:hover{background:#f7fbff}
+    .refresh-btn:disabled{opacity:.6;cursor:wait}
+    .refresh-btn svg{width:14px;height:14px}
+    .refresh-status{font-size:12px;color:var(--muted);font-weight:700}
     .hero-card{padding:24px;background:linear-gradient(135deg,#e9f5ff 0%,#f8fcff 100%);position:relative;overflow:hidden}
     .hero-card h1{margin:0;font-size:38px;line-height:1.1;font-weight:900;background:linear-gradient(90deg,var(--blue),var(--teal));-webkit-background-clip:text;color:transparent}
     .hero-card p{margin:14px 0 0;color:#264466;font-size:15px;line-height:1.7;max-width:760px}
@@ -127,9 +134,15 @@
       app.innerHTML = `
         <section class="hero">
           <div class="hero-card">
-            <div class="pill-row">
-              <span class="pill">GA4 + GSC</span>
-              <span class="pill">Universal Dashboard</span>
+            <div class="hero-top">
+              <div class="pill-row">
+                <span class="pill">GA4 + GSC</span>
+                <span class="pill">Universal Dashboard</span>
+              </div>
+              <div class="hero-actions">
+                <button class="refresh-btn" id="manualRefreshBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><span id="manualRefreshLabel">手動更新數據</span></button>
+                <span class="refresh-status" id="manualRefreshStatus"></span>
+              </div>
             </div>
             <h1>${data.dashboardTitle || '智慧量子數據指揮中心'}</h1>
             <p>這是一個從 WordPress 後台儀表板抽離出來的通用版前台介面。相同 payload 可重用於 HTML 網站、WordPress 後台或任何自訂系統。</p>
@@ -196,6 +209,28 @@
           <div class="footer-note">新客 ${data.newVsReturning.new} ｜ 回訪 ${data.newVsReturning.returning}</div>
         </section>
       `;
+      const refreshBtn = document.getElementById('manualRefreshBtn');
+      const refreshLabel = document.getElementById('manualRefreshLabel');
+      const refreshStatus = document.getElementById('manualRefreshStatus');
+      if (refreshBtn && refreshLabel && refreshStatus) {
+        refreshBtn.addEventListener('click', async () => {
+          refreshBtn.disabled = true;
+          refreshLabel.textContent = '更新中...';
+          refreshStatus.textContent = '正在刷新快取';
+          try {
+            const res = await fetch('../manual-refresh.php', { method: 'POST' });
+            const json = await res.json();
+            if (!res.ok || json.status !== 'ok') throw new Error(json.message || '更新失敗');
+            refreshStatus.textContent = `更新完成：${json.refreshedAtLabel || ''}`.trim();
+            refreshLabel.textContent = '重新整理中...';
+            window.location.reload();
+          } catch (err) {
+            refreshBtn.disabled = false;
+            refreshLabel.textContent = '手動更新數據';
+            refreshStatus.textContent = err.message || '更新失敗';
+          }
+        });
+      }
     }
 
     loadPayload().then(render).catch(err => {

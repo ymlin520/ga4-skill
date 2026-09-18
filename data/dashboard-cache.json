@@ -276,8 +276,8 @@
     ],
     "dashboardTitle": "GA4 + GSC 每日更新儀表板",
     "refreshMeta": {
-        "refreshedAtIso": "2026-09-17T11:16:38+08:00",
-        "refreshedAtLabel": "2026-09-17 11:16:38",
+        "refreshedAtIso": "2026-09-18T11:02:58+08:00",
+        "refreshedAtLabel": "2026-09-18 11:02:58",
         "timezone": "Asia/Taipei",
         "sourceMode": "mock",
         "dailySchedule": "08:00"
